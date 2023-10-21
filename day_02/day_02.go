@@ -62,11 +62,11 @@ func main() {
 		"Scissors": 3,
 	}
 
-    outcomeScores := map[string]int{
-        "X" : 0,
-        "Y" : 3,
-        "Z" : 6,
-    }
+	outcomeScores := map[string]int{
+		"X": 0,
+		"Y": 3,
+		"Z": 6,
+	}
 
 	shapeStrats := map[string]map[string]string{
 		"A": {
@@ -86,18 +86,18 @@ func main() {
 		},
 	}
 
-    var roundScores int
+	var roundScores int
 
-    for _, round := range splitLines {
-        thrownShape := string(round[0])
-        outcome := string(round[2])
-        //score for choosing the appropriate response
-        roundScore := shapeScores[shapeStrats[thrownShape][outcome]]
-        //score for outcome
-        roundScore += outcomeScores[outcome]        
-        roundScores += roundScore
-    }
+	for _, round := range splitLines {
+		thrownShape := string(round[0])
+		outcome := string(round[2])
+		//score for choosing the appropriate response
+		roundScore := shapeScores[shapeStrats[thrownShape][outcome]]
+		//score for outcome
+		roundScore += outcomeScores[outcome]
+		roundScores += roundScore
+	}
 
-    fmt.Printf("Part 2: %v\n", roundScores)
+	fmt.Printf("Part 2: %v\n", roundScores)
 
 }
