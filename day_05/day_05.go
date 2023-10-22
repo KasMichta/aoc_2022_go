@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"regexp"
 	"slices"
 	"strings"
-    "fmt"
-    "regexp"
 )
 
 func readLines(file string) []string {
@@ -20,20 +20,32 @@ func readLines(file string) []string {
 	return splitLines
 }
 
-func readCrates(lines []string) map[int]string {
+func readCrates(lines []string) map[int][]string {
 	breakLine := slices.Index(lines, "")
-	fmt.Printf("break line: %v\n", breakLine)
-    
-    crateLine := lines[breakLine-1]
-    re := regexp.MustCompile(`\d+`)
-    crateNumbers := re.FindAllString(crateLine, -1)
-    
-    fmt.Printf("crate numbers: %v\n", crateNumbers)
-	crates := make(map[int]string)
-	return crates
+	//fmt.Printf("break line: %v\n", breakLine)
+
+	stackLine := lines[breakLine-1]
+	re := regexp.MustCompile(`\d+`)
+	stackNumbers := re.FindAllStringIndex(stackLine, -1)
+	//fmt.Printf("stack numbers: %v\n", stackNumbers)
+	stacks := make(map[int][]string)
+
+	for stkid, stk := range stackNumbers {
+		column := stk[0]
+        var crates []string
+
+        for i := 0; i < (breakLine - 1) ; i++  {
+		    crate := string(lines[i][column])
+            if crate != " " {
+                crates = append(crates, crate)
+            }
+		}
+        stacks[stkid+1] = crates
+	}
+	return stacks
 }
 
 func main() {
 	lines := readLines(os.Args[1])
-	readCrates(lines)
+	fmt.Printf("%v\n", readCrates(lines))
 }
