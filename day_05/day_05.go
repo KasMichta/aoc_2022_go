@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
     "fmt"
+    "regexp"
 )
 
 func readLines(file string) []string {
@@ -22,6 +23,12 @@ func readLines(file string) []string {
 func readCrates(lines []string) map[int]string {
 	breakLine := slices.Index(lines, "")
 	fmt.Printf("break line: %v\n", breakLine)
+    
+    crateLine := lines[breakLine-1]
+    re := regexp.MustCompile(`\d+`)
+    crateNumbers := re.FindAllString(crateLine, -1)
+    
+    fmt.Printf("crate numbers: %v\n", crateNumbers)
 	crates := make(map[int]string)
 	return crates
 }
