@@ -25,7 +25,7 @@ func main() {
 	fmt.Printf("%v\n", lines[len(lines)-1:])
 
 	var overlapTotal int
-    var anylapTotal int
+	var anylapTotal int
 	for _, line := range lines {
 		pair := strings.Split(line, ",")
 		elfs := make(map[int][]int)
@@ -51,11 +51,11 @@ func main() {
 			overlapTotal++
 		}
 
-        //Part 2
-        if (elfs[0][1] >= elfs[1][0]) && (elfs[0][0] <= elfs[1][1]) {
-            anylapTotal++
-        }
-        //wait. what.
+		//Part 2
+		if (elfs[0][1] >= elfs[1][0]) && (elfs[0][0] <= elfs[1][1]) {
+			anylapTotal++
+		}
+		//wait. what.
 	}
 	fmt.Printf("total: %v\n", overlapTotal)
 	fmt.Printf("total anylapTotal: %v\n", anylapTotal)
