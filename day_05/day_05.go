@@ -60,34 +60,6 @@ func readProcedure(procedureString string) map[string]int {
 	return procedure
 }
 
-//func execProcedure(proc map[string]int, stacks map[int][]string) {
-//	stkFrom := stacks[proc["from"]]
-//	stkTo := stacks[proc["to"]]
-//	var toMove []string
-//	if len(stkFrom) >= proc["move"] {
-//		toMove = stkFrom[:proc["move"]]
-//		stkFrom = stkFrom[proc["move"]:]
-//	} else {
-//		toMove = stkFrom[:]
-//		stkFrom = stkFrom[:]
-//	}
-//	targetStack := stkTo
-//	//... unpacks b,
-//	targetStack = append(targetStack, toMove...)
-//}
-
-//func execProcedure(move int, from int, to int, stackFrm *[]string, stackTo *[]string) {
-//	var toMove []string
-//	if len(&stackFrm) >= move {
-//		toMove = &stackFrm[:move]
-//		*stackFrm = &stackFrm[move:]
-//	} else {
-//		toMove = stackFrm[:]
-//		stackFrm = stackFrm[:]
-//	}
-//	stackTo = append(stackTo, toMove...)
-//}
-
 func main() {
     //Part 1
 	lines := readLines(os.Args[1])
@@ -95,6 +67,7 @@ func main() {
 	//fmt.Printf("%v\n", readCrates(lines))
 	//fmt.Printf("%v\n", readProcedure(lines[10]))
 	stacks := readCrates(lines)
+    stacks2 := readCrates(lines)
 	for _, line := range procLines {
 		pr := readProcedure(line)
 		stackFrom := pr["from"]
@@ -114,6 +87,28 @@ func main() {
     slices.Sort(stackKeys)
 	for _, stack := range stackKeys {
 		fmt.Printf("%v", stacks[stack][0])
+	}
+	fmt.Println()
+
+    //Part 2
+    //haha, I solved it as a mistake
+	for _, line := range procLines {
+		pr := readProcedure(line)
+		stackFrom := pr["from"]
+		stackTo := pr["to"]
+		move := pr["move"]
+
+		cratesToMove := stacks2[stackFrom][:move]
+		stacks2[stackFrom] = stacks2[stackFrom][move:]
+
+		stacks2[stackTo] = slices.Insert(stacks2[stackTo], 0, cratesToMove...)
+
+	}
+
+	stackKeys2 := maps.Keys(stacks2)
+    slices.Sort(stackKeys2)
+	for _, stack := range stackKeys {
+		fmt.Printf("%v", stacks2[stack][0])
 	}
 	fmt.Println()
 }
