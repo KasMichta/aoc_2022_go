@@ -73,7 +73,7 @@ func main() {
 
 		cratesToMoveP1 := stacksP1[from][:move]
 		cratesToMoveP2 := stacksP2[from][:move]
-		//because they are LIFO
+		//because P1 procedures are LIFO
 		slices.Reverse(cratesToMoveP1)
 		stacksP1[from] = stacksP1[from][move:]
 		stacksP2[from] = stacksP2[from][move:]
