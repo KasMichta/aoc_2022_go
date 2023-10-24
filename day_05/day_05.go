@@ -7,6 +7,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"golang.org/x/exp/maps"
 )
 
 func readLines(file string) []string {
@@ -58,8 +60,60 @@ func readProcedure(procedureString string) map[string]int {
 	return procedure
 }
 
+//func execProcedure(proc map[string]int, stacks map[int][]string) {
+//	stkFrom := stacks[proc["from"]]
+//	stkTo := stacks[proc["to"]]
+//	var toMove []string
+//	if len(stkFrom) >= proc["move"] {
+//		toMove = stkFrom[:proc["move"]]
+//		stkFrom = stkFrom[proc["move"]:]
+//	} else {
+//		toMove = stkFrom[:]
+//		stkFrom = stkFrom[:]
+//	}
+//	targetStack := stkTo
+//	//... unpacks b,
+//	targetStack = append(targetStack, toMove...)
+//}
+
+//func execProcedure(move int, from int, to int, stackFrm *[]string, stackTo *[]string) {
+//	var toMove []string
+//	if len(&stackFrm) >= move {
+//		toMove = &stackFrm[:move]
+//		*stackFrm = &stackFrm[move:]
+//	} else {
+//		toMove = stackFrm[:]
+//		stackFrm = stackFrm[:]
+//	}
+//	stackTo = append(stackTo, toMove...)
+//}
+
 func main() {
+    //Part 1
 	lines := readLines(os.Args[1])
-	fmt.Printf("%v\n", readCrates(lines))
-	fmt.Printf("%v\n", readProcedure(lines[10]))
+	procLines := lines[10:]
+	//fmt.Printf("%v\n", readCrates(lines))
+	//fmt.Printf("%v\n", readProcedure(lines[10]))
+	stacks := readCrates(lines)
+	for _, line := range procLines {
+		pr := readProcedure(line)
+		stackFrom := pr["from"]
+		stackTo := pr["to"]
+		move := pr["move"]
+
+		cratesToMove := stacks[stackFrom][:move]
+        //because they are LIFO
+        slices.Reverse(cratesToMove)
+		stacks[stackFrom] = stacks[stackFrom][move:]
+
+		stacks[stackTo] = slices.Insert(stacks[stackTo], 0, cratesToMove...)
+
+	}
+
+	stackKeys := maps.Keys(stacks)
+    slices.Sort(stackKeys)
+	for _, stack := range stackKeys {
+		fmt.Printf("%v", stacks[stack][0])
+	}
+	fmt.Println()
 }
