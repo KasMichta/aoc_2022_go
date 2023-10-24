@@ -48,16 +48,15 @@ func readCrates(lines []string) map[int][]string {
 	return stacks
 }
 
-func readProcedure(procedureString string) map[string]int {
+func readProcedure(procedureString string) (move, from, to int) {
 	re := regexp.MustCompile(`\d+`)
 	steps := re.FindAllString(procedureString, -1)
-	procedure := make(map[string]int)
 
-	procedure["move"], _ = strconv.Atoi(steps[0])
-	procedure["from"], _ = strconv.Atoi(steps[1])
-	procedure["to"], _ = strconv.Atoi(steps[2])
+	move, _ = strconv.Atoi(steps[0])
+	from, _ = strconv.Atoi(steps[1])
+	to, _ = strconv.Atoi(steps[2])
 
-	return procedure
+	return
 }
 
 func main() {
@@ -66,49 +65,30 @@ func main() {
 	procLines := lines[10:]
 	//fmt.Printf("%v\n", readCrates(lines))
 	//fmt.Printf("%v\n", readProcedure(lines[10]))
-	stacks := readCrates(lines)
-    stacks2 := readCrates(lines)
-	for _, line := range procLines {
-		pr := readProcedure(line)
-		stackFrom := pr["from"]
-		stackTo := pr["to"]
-		move := pr["move"]
-
-		cratesToMove := stacks[stackFrom][:move]
-        //because they are LIFO
-        slices.Reverse(cratesToMove)
-		stacks[stackFrom] = stacks[stackFrom][move:]
-
-		stacks[stackTo] = slices.Insert(stacks[stackTo], 0, cratesToMove...)
-
-	}
-
-	stackKeys := maps.Keys(stacks)
-    slices.Sort(stackKeys)
-	for _, stack := range stackKeys {
-		fmt.Printf("%v", stacks[stack][0])
-	}
-	fmt.Println()
-
+	stacksP1 := readCrates(lines)
     //Part 2
-    //haha, I solved it as a mistake
+    stacksP2 := readCrates(lines)
 	for _, line := range procLines {
-		pr := readProcedure(line)
-		stackFrom := pr["from"]
-		stackTo := pr["to"]
-		move := pr["move"]
+		move, from, to := readProcedure(line)
 
-		cratesToMove := stacks2[stackFrom][:move]
-		stacks2[stackFrom] = stacks2[stackFrom][move:]
+		cratesToMoveP1 := stacksP1[from][:move]
+        cratesToMoveP2 := stacksP2[from][:move]
+        //because they are LIFO
+        slices.Reverse(cratesToMoveP1)
+		stacksP1[from] = stacksP1[from][move:]
+        stacksP2[from] = stacksP2[from][move:]
 
-		stacks2[stackTo] = slices.Insert(stacks2[stackTo], 0, cratesToMove...)
-
+		stacksP1[to] = slices.Insert(stacksP1[to], 0, cratesToMoveP1...)
+		stacksP2[to] = slices.Insert(stacksP2[to], 0, cratesToMoveP2...)
 	}
 
-	stackKeys2 := maps.Keys(stacks2)
-    slices.Sort(stackKeys2)
+	stackKeys := maps.Keys(stacksP1)
+    slices.Sort(stackKeys)
+    var topOfStacksP1 string
+    var topOfStacksP2 string
 	for _, stack := range stackKeys {
-		fmt.Printf("%v", stacks2[stack][0])
+        topOfStacksP1 += stacksP1[stack][0]
+        topOfStacksP2 += stacksP2[stack][0]
 	}
-	fmt.Println()
+    fmt.Printf("Part 1: %v\nPart 2: %v\n", topOfStacksP1, topOfStacksP2)
 }
