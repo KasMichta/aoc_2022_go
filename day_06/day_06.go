@@ -26,16 +26,22 @@ func verifyMarker(curr []string) bool {
 	return true
 }
 
-func main() {
-    //Part 1
-	dataStrmBuff := readFile(os.Args[1])
-	for i := 0; i <= len(dataStrmBuff)-4; i++ {
-		curr := dataStrmBuff[i : i+4]
+func searchMarker(strmBuff []string, length int) {
+	for i := 0; i <= len(strmBuff)-length; i++ {
+		curr := strmBuff[i : i+length]
 		if verifyMarker(curr) {
-            //last char of curr
-			fmt.Printf("at: %v\n", i+4)
+			//last char of curr
+			fmt.Printf("at: %v\n", i+length)
 			fmt.Printf("marker: %v\n", curr)
 			break
 		}
 	}
+}
+
+func main() {
+	//Part 1
+	dataStrmBuff := readFile(os.Args[1])
+    searchMarker(dataStrmBuff, 4)
+    //Part 2
+    searchMarker(dataStrmBuff, 14)
 }
