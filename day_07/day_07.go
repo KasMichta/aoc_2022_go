@@ -30,22 +30,6 @@ type directory struct {
 	totalSize int
 }
 
-func sumDirsOfSize(d *directory, size int, sum *int) {
-	if d.children == nil {
-		if d.totalSize <= size {
-			*sum += d.totalSize
-		}
-	} else {
-		for _, dir := range d.children {
-			sumDirsOfSize(dir, size, sum)
-			d.totalSize += dir.totalSize
-		}
-		if d.totalSize <= size {
-			*sum += d.totalSize
-		}
-	}
-}
-
 func (d *directory) addDir(n string) {
 	d.children = append(d.children, &directory{
 		name:   n,
@@ -59,8 +43,36 @@ func (d *directory) addFile(l string) {
 	d.totalSize += size
 }
 
+func propDirSize(d *directory) {
+	if d.children != nil {
+		for _, dir := range d.children {
+			propDirSize(dir)
+			d.totalSize += dir.totalSize
+		}
+	}
+}
+
+func sumDirsOfSize(d *directory, size int, sum *int) {
+	for _, dir := range d.children {
+		sumDirsOfSize(dir, size, sum)
+	}
+	if d.totalSize <= size {
+		*sum += d.totalSize
+	}
+}
+
+func findDirSize(d *directory, reqSpace int, minSize *int) {
+	for _, dir := range d.children {
+		findDirSize(dir, reqSpace, minSize)
+	}
+	if d.totalSize >= reqSpace && d.totalSize < *minSize {
+		*minSize = d.totalSize
+	}
+}
+
 func main() {
-	lines := readLines(os.Args[1]) //[:36]
+	//Part 1
+	lines := readLines(os.Args[1])
 	fs := fileSystem{directory{name: "root"}}
 	currDir := &fs.rootDir
 	var i int
@@ -85,7 +97,20 @@ func main() {
 			i++
 		}
 	}
-	total := 0
-	sumDirsOfSize(&fs.rootDir, 100000, &total)
-	fmt.Println(total)
+
+	propDirSize(&fs.rootDir)
+
+	var total int
+	threshold := 100000
+	sumDirsOfSize(&fs.rootDir, threshold, &total)
+	fmt.Printf("total of dirs under threshold: %v\n", total)
+
+	//Part 2
+	diskSize := 70000000
+	updateSize := 30000000
+	freeSpace := diskSize - fs.rootDir.totalSize
+	reqSpace := updateSize - freeSpace
+	minSize := freeSpace
+	findDirSize(&fs.rootDir, reqSpace, &minSize)
+	fmt.Printf("min dir size to free: %v\n", minSize)
 }
