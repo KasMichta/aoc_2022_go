@@ -30,24 +30,33 @@ type directory struct {
 	totalSize int
 }
 
-func sumDirs(d *directory, total *int, thrsh int) {
+func sumDirsOfSize(d *directory, size int, sum *int) {
 	if d.children == nil {
-		if d.totalSize <= thrsh {
-			*total += d.totalSize
-            fmt.Println(d.name, d.totalSize)
+		if d.totalSize <= size {
+			*sum += d.totalSize
 		}
 	} else {
 		for _, dir := range d.children {
-            fmt.Println("inner", dir.name, dir.totalSize)
-			sumDirs(dir, total, thrsh)
-            d.totalSize += dir.totalSize
-            fmt.Println("after children:",d.totalSize)
+			sumDirsOfSize(dir, size, sum)
+			d.totalSize += dir.totalSize
 		}
-		if d.totalSize <= thrsh {
-			*total += d.totalSize
-            fmt.Println(d.name, d.totalSize)
+		if d.totalSize <= size {
+			*sum += d.totalSize
 		}
 	}
+}
+
+func (d *directory) addDir(n string) {
+	d.children = append(d.children, &directory{
+		name:   n,
+		parent: d,
+	})
+}
+
+func (d *directory) addFile(l string) {
+	fileSize := strings.Split(l, " ")
+	size, _ := strconv.Atoi(fileSize[0])
+	d.totalSize += size
 }
 
 func main() {
@@ -59,39 +68,24 @@ func main() {
 		currLine := lines[i]
 		switch {
 		case strings.Contains(currLine, "$ ls"):
-			//fmt.Println("ls")
 			i++
 		case strings.Contains(currLine, "$ cd"):
 			dirName := strings.Split(currLine, " ")[2]
-			//fmt.Println(dirName)
 			if dirName == ".." {
 				currDir = currDir.parent
-				//fmt.Println("OutTo:", currDir.name)
 			} else {
-				currDir.children = append(currDir.children, &directory{
-					name:   dirName,
-					parent: currDir,
-				})
+				currDir.addDir(dirName)
 				currDir = currDir.children[len(currDir.children)-1]
-				//fmt.Println("InTo:", currDir.name)
 			}
 			i++
 		default:
 			if !strings.Contains(currLine, "dir ") {
-				fileSize := strings.Split(currLine, " ")
-				size, _ := strconv.Atoi(fileSize[0])
-				currDir.totalSize += size
-				//dir := *currDir
-				//fmt.Printf("current:%v size:%v\n", dir.name, dir.totalSize)
+				currDir.addFile(currLine)
 			}
 			i++
 		}
 	}
-	fmt.Println(fs.rootDir)
 	total := 0
-	sumDirs(&fs.rootDir, &total, 100000)
+	sumDirsOfSize(&fs.rootDir, 100000, &total)
 	fmt.Println(total)
-	//rootDir := fs.rootDir.children[0]
-	//fmt.Println(*rootDir)
-
 }
