@@ -19,41 +19,55 @@ func readLines(file string) []string {
 	return splitLines
 }
 
-func checkVisible(trees map[[2]int]int, lim int) bool {
+func walkLeft(trees map[[2]int]int, c int, r int, t int) (bool, int) {
+	visible := true
+	for i := c - 1; i >= 0; i-- {
+		if trees[[2]int{r, i}] >= t {
+			visible = false
+		}
+	}
+	return visible, 0
+}
 
-	return true
+func walkRight(trees map[[2]int]int, c int, r int, lim int, t int) (bool, int) {
+	visible := true
+	for i := c + 1; i <= lim; i++ {
+		if trees[[2]int{r, i}] >= t {
+			visible = false
+		}
+	}
+	return visible, 0
+}
+
+func walkUp(trees map[[2]int]int, c int, r int, t int) (bool, int) {
+	visible := true
+	for i := r - 1; i >= 0; i-- {
+		if trees[[2]int{i, c}] >= t {
+			visible = false
+		}
+	}
+	return visible, 0
+}
+
+func walkDown(trees map[[2]int]int, c int, r int, lim int, t int) (bool, int) {
+	visible := true
+	for i := r + 1; i <= lim; i++ {
+		if trees[[2]int{i, c}] >= t {
+			visible = false
+		}
+	}
+	return visible, 0
 }
 
 func sumVisible(trees map[[2]int]int, rowCount int, colCount int, s *int) {
 	for cord, tree := range trees {
 		row, col := cord[0], cord[1]
 		if col != 0 && col != colCount-1 && row != 0 && row != rowCount-1 {
-			l := true
-			for i := col - 1; i >= 0; i-- {
-				if trees[[2]int{row, i}] >= tree {
-					l = false
-				}
-			}
-			u := true
-			for i := row - 1; i >= 0; i-- {
-				if trees[[2]int{i, col}] >= tree {
-					u = false
-				}
-			}
+			l, _ := walkLeft(trees, col, row, tree)
+			r, _ := walkRight(trees, col, row, colCount, tree)
+			u, _ := walkUp(trees, col, row, tree)
+			d, _ := walkDown(trees, col, row, rowCount, tree)
 
-			r := true
-			for i := col + 1; i <= colCount; i++ {
-				if trees[[2]int{row, i}] >= tree {
-					r = false
-				}
-			}
-
-			d := true
-			for i := row + 1; i <= rowCount; i++ {
-				if trees[[2]int{i, col}] >= tree {
-					d = false
-				}
-			}
 			if l || r || u || d {
 				*s++
 			}
@@ -72,9 +86,9 @@ func main() {
 			trees[cords] = treeHgt
 		}
 	}
-	fmt.Println(len(trees))
+
 	var sum int
 	sumVisible(trees, len(lines), len(lines[0]), &sum)
-    edgeTrees := (len(lines)+len(lines[0]))*2 - 4
+	edgeTrees := (len(lines)+len(lines[0]))*2 - 4
 	fmt.Println(sum + edgeTrees)
 }
