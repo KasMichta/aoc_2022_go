@@ -3,10 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"slices"
 	"strconv"
 	"strings"
-	//"slices"
 )
 
 func readLines(file string) []string {
@@ -21,63 +19,62 @@ func readLines(file string) []string {
 	return splitLines
 }
 
-func countVisible(trees []int, t *int) {
-	innerTrees := trees[1 : len(trees)-1]
-	//fmt.Println(len(innerTrees), cap(innerTrees))
-	//firstTree := trees[0]
-	tallestTree := trees[0]
-	for _, tree := range innerTrees {
-		if tree > tallestTree {
-			tallestTree = tree
-			*t++
+func checkVisible(trees map[[2]int]int, lim int) bool {
+
+	return true
+}
+
+func sumVisible(trees map[[2]int]int, rowCount int, colCount int, s *int) {
+	for cord, tree := range trees {
+		row, col := cord[0], cord[1]
+		if col != 0 && col != colCount-1 && row != 0 && row != rowCount-1 {
+			l := true
+			for i := col - 1; i >= 0; i-- {
+				if trees[[2]int{row, i}] >= tree {
+					l = false
+				}
+			}
+			u := true
+			for i := row - 1; i >= 0; i-- {
+				if trees[[2]int{i, col}] >= tree {
+					u = false
+				}
+			}
+
+			r := true
+			for i := col + 1; i <= colCount; i++ {
+				if trees[[2]int{row, i}] >= tree {
+					r = false
+				}
+			}
+
+			d := true
+			for i := row + 1; i <= rowCount; i++ {
+				if trees[[2]int{i, col}] >= tree {
+					d = false
+				}
+			}
+			if l || r || u || d {
+				*s++
+			}
 		}
 	}
 }
 
 func main() {
 	lines := readLines(os.Args[1])
-	rowCount := len(lines)
-	colCount := len(lines[0])
-	rows := make([][]int, rowCount)
-	cols := make([][]int, colCount)
-	trees := map[string][][]int{
-		"rows": rows,
-		"cols": cols,
-	}
+	trees := make(map[[2]int]int)
 	for i, line := range lines {
-		rowStrs := strings.Split(line, "")
-		for j, tree := range rowStrs {
+		row := strings.Split(line, "")
+		for j, tree := range row {
 			treeHgt, _ := strconv.Atoi(tree)
-			rows[i] = append(rows[i], treeHgt)
-			cols[j] = append(cols[j], treeHgt)
+			cords := [2]int{i, j}
+			trees[cords] = treeHgt
 		}
 	}
-	var firstTotal int
-	fmt.Println(trees["rows"][20])
-	countVisible(trees["rows"][20], &firstTotal)
-	fmt.Println(firstTotal)
-
-	var totalVisible int
-	for _, row := range trees["rows"] {
-		//L->R
-		countVisible(row, &totalVisible)
-		//R->L
-		slices.Reverse(row)
-		countVisible(row, &totalVisible)
-	}
-	for _, col := range trees["cols"] {
-		//T->B
-		countVisible(col, &totalVisible)
-		//B->T
-		slices.Reverse(col)
-		countVisible(col, &totalVisible)
-	}
-	fmt.Println("innerTrees:", totalVisible)
-	//fmt.Println("lines", len(lines))
-	//fmt.Println("cols", len(lines[0]))
-	//// remove 4 counted twice
-	edgeTrees := (len(lines)+len(lines[0]))*2 - 4
-	fmt.Println("totalTrees:", edgeTrees+totalVisible)
-	fmt.Println(len(trees["rows"]))
-    fmt.Println(len(trees["cols"]))
+	fmt.Println(len(trees))
+	var sum int
+	sumVisible(trees, len(lines), len(lines[0]), &sum)
+    edgeTrees := (len(lines)+len(lines[0]))*2 - 4
+	fmt.Println(sum + edgeTrees)
 }
