@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	//"slices"
 )
 
 func readLines(file string) []string {
@@ -19,76 +20,84 @@ func readLines(file string) []string {
 	return splitLines
 }
 
-func walkLeft(trees map[[2]int]int, c int, r int, t int) (bool, int) {
-	visible := true
-	for i := c - 1; i >= 0; i-- {
-		if trees[[2]int{r, i}] >= t {
-			visible = false
-		}
-	}
-	return visible, 0
-}
+func scopeTrees(trees [][]int) (int, int) {
+    var visSum int
+    var maxScnScr int
+	for y, row := range trees {
+		for x, tree := range row {
+			if y == 0 || x == 0 || y == len(trees)-1 || x == len(row)-1 {
+                visSum++
+			} else {
+                visL := true
+                var scnScrL int
+				for nxt := x - 1; nxt >= 0; nxt-- {
+                    if trees[y][nxt] >= tree {
+                        visL = false
+                        scnScrL++
+                        break
+                    }
+                    scnScrL++
+				}
 
-func walkRight(trees map[[2]int]int, c int, r int, lim int, t int) (bool, int) {
-	visible := true
-	for i := c + 1; i <= lim; i++ {
-		if trees[[2]int{r, i}] >= t {
-			visible = false
-		}
-	}
-	return visible, 0
-}
+                visR := true
+                var scnScrR int
+				for nxt := x + 1; nxt < len(row); nxt++ {
+                    if trees[y][nxt] >= tree {
+                        visR = false
+                        scnScrR++
+                        break
+                    }
+                    scnScrR++
+				}
 
-func walkUp(trees map[[2]int]int, c int, r int, t int) (bool, int) {
-	visible := true
-	for i := r - 1; i >= 0; i-- {
-		if trees[[2]int{i, c}] >= t {
-			visible = false
-		}
-	}
-	return visible, 0
-}
+                visU := true
+                var scnScrU int
+				for nxt := y - 1; nxt >= 0; nxt-- {
+                    if trees[nxt][x] >= tree {
+                        visU = false
+                        scnScrU ++
+                        break
+                    }
+                    scnScrU++
+				}
 
-func walkDown(trees map[[2]int]int, c int, r int, lim int, t int) (bool, int) {
-	visible := true
-	for i := r + 1; i <= lim; i++ {
-		if trees[[2]int{i, c}] >= t {
-			visible = false
-		}
-	}
-	return visible, 0
-}
+                visD := true
+                var scnScrD int
+				for nxt := y + 1; nxt < len(trees); nxt++ {
+                    if trees[nxt][x] >= tree {
+                        visD = false
+                        scnScrD ++
+                        break
+                    }
+                    scnScrD++
+				}
 
-func sumVisible(trees map[[2]int]int, rowCount int, colCount int, s *int) {
-	for cord, tree := range trees {
-		row, col := cord[0], cord[1]
-		if col != 0 && col != colCount-1 && row != 0 && row != rowCount-1 {
-			l, _ := walkLeft(trees, col, row, tree)
-			r, _ := walkRight(trees, col, row, colCount, tree)
-			u, _ := walkUp(trees, col, row, tree)
-			d, _ := walkDown(trees, col, row, rowCount, tree)
-
-			if l || r || u || d {
-				*s++
+                if visL || visR || visU || visD { 
+                    visSum++
+                }
+                scnScr := scnScrL * scnScrR * scnScrU * scnScrD
+                if scnScr > maxScnScr {
+                    maxScnScr = scnScr
+                }
 			}
+
 		}
 	}
+	return visSum, maxScnScr
 }
 
 func main() {
 	lines := readLines(os.Args[1])
-	trees := make(map[[2]int]int)
-	for i, line := range lines {
-		row := strings.Split(line, "")
-		for j, tree := range row {
+	trees := make([][]int, len(lines))
+	for y, line := range lines {
+		treeRow := strings.Split(line, "")
+		for _, tree := range treeRow {
 			treeHgt, _ := strconv.Atoi(tree)
-			cords := [2]int{i, j}
-			trees[cords] = treeHgt
+			trees[y] = append(trees[y], treeHgt)
 		}
 	}
 
-	var sum int
-	sumVisible(trees, len(lines), len(lines[0]), &sum)
-	edgeTrees := (len(lines)+len(lines[0]))*2 - 4
-	fmt.Println(sum + edgeTrees)
+    sumVisible, maxScnScr := scopeTrees(trees)
+	fmt.Println("Sum of visible trees:", sumVisible, "|", "Max scenic score:", maxScnScr)
+
 }
