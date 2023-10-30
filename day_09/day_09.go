@@ -97,5 +97,5 @@ func main() {
 			count++
 		}
 	}
-    fmt.Println("unique tail positions:", count)
+	fmt.Println("unique tail positions:", count)
 }
