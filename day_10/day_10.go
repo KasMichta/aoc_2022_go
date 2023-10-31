@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -20,76 +21,62 @@ func readLines(file string) []string {
 }
 
 type clock struct {
-	cycle  int
-	reg    map[string]int
-	buffer map[string][][]int
+	cycle          int
+	reg            map[string]int
+	signalInterval int
+	signals        map[int]int
 }
 
 func (c *clock) tick() {
-	if c.buffer != nil {
-		for k, b := range c.buffer {
-			for _, op := range b {
-				if op[0] == 1 {
-					c.reg[k] += op[1]
-                    c.buffer[k] = c.buffer[k][1:]
-				} else {
-					op[0]--
-				}
-			}
+	for r := range c.reg {
+		if c.cycle%c.signalInterval == 0 {
+			c.signals[c.cycle] = c.reg[r] * c.cycle
 		}
 	}
-
 	c.cycle++
 }
 
-func (c *clock) noop() {
-	c.tick()
-}
-
 func (c *clock) add(reg string, val int) {
-	op := []int{2, val}
-	c.buffer[reg] = append(c.buffer[reg], op)
+	c.tick()
+	c.tick()
+	c.reg[reg] += val
 }
 
 func main() {
 	lines := readLines(os.Args[1])
 	reg := map[string]int{"x": 1}
-
-	buffer := map[string][][]int{
-		"x": make([][]int, 0),
-	}
+	signals := make(map[int]int)
 
 	clock := clock{
-		cycle:  1,
-		reg:    reg,
-		buffer: buffer,
+		cycle:          1,
+		reg:            reg,
+		signalInterval: 20,
+		signals:        signals,
 	}
-
-    var remainingCycles int
 
 	for _, line := range lines {
-		fmt.Println("=========")
-		fmt.Println(clock.cycle, clock.reg, clock.buffer)
-		fmt.Println(line)
-
 		if line == "noop" {
-            remainingCycles++
-			clock.noop()
+			clock.tick()
 		} else {
-            remainingCycles += 2
 			parts := strings.Split(line, " ")
-			reg := string(parts[0][len(parts[0])-1])
+			reg := parts[0][len(parts[0])-1]
 			val, _ := strconv.Atoi(parts[1])
-			clock.add(reg, val)
-            clock.tick()
+			clock.add(string(reg), val)
 		}
-		fmt.Println(clock.cycle, clock.reg, clock.buffer)
-        remainingCycles--
 	}
+	keys := make([]int, 0)
+	for k := range clock.signals {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
 
-    for remainingCycles > 0 {
-        clock.tick()
-        remainingCycles--
-        fmt.Println(clock.cycle, clock.reg, clock.buffer)
-    }
+	var sumSignals int
+	var signalOffset int
+	for _, k := range keys {
+		if k <= 220 && k%(20+signalOffset) == 0 {
+			sumSignals += clock.signals[k]
+			signalOffset += 40
+		}
+	}
+	fmt.Println(sumSignals)
 }
