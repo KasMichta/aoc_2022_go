@@ -27,18 +27,34 @@ type clock struct {
 	signals        map[int]int
 }
 
-func (c *clock) tick() {
+type crt struct {
+    grid [6][40]string
+}
+
+func (c *clock) tick(crt *crt) {
+    if c.cycle % 40 == 0 {
+        fmt.Println(c.reg["x"])
+    }
+    row := c.cycle / 40
+    col := c.cycle % 40
+    lsp, rsp := col - 1, col + 1
+    crt.grid[row][col] = "."
+    if lsp <= c.reg["x"] && rsp >= c.reg["x"]{
+        crt.grid[row][col] = "#"
+    }
+
+	c.cycle++
 	for r := range c.reg {
 		if c.cycle%c.signalInterval == 0 {
 			c.signals[c.cycle] = c.reg[r] * c.cycle
 		}
 	}
-	c.cycle++
+    
 }
 
-func (c *clock) add(reg string, val int) {
-	c.tick()
-	c.tick()
+func (c *clock) add(reg string, val int, crt *crt) {
+	c.tick(crt)
+	c.tick(crt)
 	c.reg[reg] += val
 }
 
@@ -48,20 +64,22 @@ func main() {
 	signals := make(map[int]int)
 
 	clock := clock{
-		cycle:          1,
+		cycle:          0,
 		reg:            reg,
 		signalInterval: 20,
 		signals:        signals,
 	}
 
+    var crt crt
+
 	for _, line := range lines {
 		if line == "noop" {
-			clock.tick()
+			clock.tick(&crt)
 		} else {
 			parts := strings.Split(line, " ")
 			reg := parts[0][len(parts[0])-1]
 			val, _ := strconv.Atoi(parts[1])
-			clock.add(string(reg), val)
+			clock.add(string(reg), val, &crt)
 		}
 	}
 	keys := make([]int, 0)
@@ -79,4 +97,7 @@ func main() {
 		}
 	}
 	fmt.Println(sumSignals)
+    for _, r := range crt.grid {
+        fmt.Println(r)
+    }
 }
